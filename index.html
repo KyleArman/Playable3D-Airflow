@@ -16,7 +16,7 @@
         background: #000;
         width: 100%;
         height: 100%;
-        touch-action: none;
+        touch-action: none; /* 🔥 Prevents browser gestures */
         overscroll-behavior: contain;
       }
       #unity-container {
@@ -29,6 +29,7 @@
         width: 100% !important;
         height: 100% !important;
         background: #000;
+        touch-action: none; /* 🔥 Must be on canvas too */
       }
       /* Force landscape orientation */
       @media screen and (orientation: portrait) {
@@ -50,12 +51,17 @@
         }
       }
     </style>
+    <script>
+      // 🔥 Prevent browser pinch zoom
+      document.addEventListener('gesturestart', e => e.preventDefault());
+      document.addEventListener('gesturechange', e => e.preventDefault());
+      document.addEventListener('gestureend', e => e.preventDefault());
+    </script>
   </head>
   <body>
     <div id="unity-container">
       <canvas id="unity-canvas" width="1920" height="1080" tabindex="-1"></canvas>
       <div id="unity-loading-bar">
-        <!-- <div id="unity-logo"></div> -->
         <div id="unity-progress-bar-empty">
           <div id="unity-progress-bar-full"></div>
         </div>
