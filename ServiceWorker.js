@@ -1,9 +1,9 @@
 const cacheName = "KhairulIzzul-ARAircondSimulation-1.0";
 const contentToCache = [
     "Build/bb0d9ecdb05db3e84da20bd14a4f84dc.loader.js",
-    "Build/1310e2d0aa661d74aa2f67596db4fa29.framework.js",
-    "Build/0c74b21d1ca8b4eff2177df3fbc9f016.data",
-    "Build/6cb94b3385a06421bf7c4c6100ce2826.wasm",
+    "Build/3046af113a742da88288652245f35eef.framework.js",
+    "Build/33f35c087de09043234d33b188fb0427.data",
+    "Build/e16b7446bd0297be069f66e3669bba6c.wasm",
     "TemplateData/style.css"
 
 ];
