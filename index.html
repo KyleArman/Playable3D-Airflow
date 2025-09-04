@@ -2,53 +2,114 @@
 <html lang="en-us">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Unity WebGL Player | ARAircondSimulation</title>
-    <meta name="description" content="">
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #000;
+        width: 100%;
+        height: 100%;
+      }
+      #unity-container {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+      }
+      #unity-canvas {
+        width: 100% !important;
+        height: 100% !important;
+        background: #000;
+      }
+      /* Force landscape orientation */
+      @media screen and (orientation: portrait) {
+        body::before {
+          content: "Please rotate your device";
+          color: white;
+          background: black;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: fixed;
+          width: 100%;
+          height: 100%;
+          top: 0;
+          left: 0;
+          z-index: 9999;
+          font-size: 2em;
+          text-align: center;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="unity-container">
-      <div id="unity-canvas-container" style="width: 100%; height: 100%;">
-        <canvas id="unity-canvas" style="width: 100%; height: 100%;"></canvas>
-      </div>
+      <canvas id="unity-canvas" width="1920" height="1080" tabindex="-1"></canvas>
       <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
+        <!-- <div id="unity-logo"></div> -->
         <div id="unity-progress-bar-empty">
           <div id="unity-progress-bar-full"></div>
         </div>
       </div>
-      <div id="unity-footer">
-        <div id="unity-webgl-logo"></div>
-        <button id="entervr" value="Enter VR" disabled>VR</button>
-        <button id="enterar" value="Enter AR" disabled>AR</button>
-        <div id="unity-webxr-link">Using <a href="https://github.com/De-Panther/unity-webxr-export" target="_blank" title="WebXR Export">WebXR Export</a></div>
-        <div id="unity-build-title">ARAircondSimulation</div>
-      </div>
+      <div id="unity-warning"></div>
     </div>
     <script>
+      window.addEventListener("load", function () {
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.register("ServiceWorker.js");
+        }
+      });
+
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var warningBanner = document.querySelector("#unity-warning");
+
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
       var buildUrl = "Build";
       var loaderUrl = buildUrl + "/bb0d9ecdb05db3e84da20bd14a4f84dc.loader.js";
       var config = {
-        dataUrl: buildUrl + "/999b1837363383d9bc9c0ea48e35c34f.data",
+        dataUrl: buildUrl + "/b5aaebf82b033c8ec8707e6dd3890347.data",
         frameworkUrl: buildUrl + "/1310e2d0aa661d74aa2f67596db4fa29.framework.js",
-        codeUrl: buildUrl + "/6c66ab7070f680baa0fb9684302a190a.wasm",
+        codeUrl: buildUrl + "/6cb94b3385a06421bf7c4c6100ce2826.wasm",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "KhairulIzzul",
         productName: "ARAircondSimulation",
         productVersion: "1.0",
+        showBanner: unityShowBanner,
       };
 
-      var container = document.querySelector("#unity-container");
-      var canvas = document.querySelector("#unity-canvas");
-      var canvasContainer = document.querySelector("#unity-canvas-container");
-      var loadingBar = document.querySelector("#unity-loading-bar");
-      var progressBarFull = document.querySelector("#unity-progress-bar-full");
-      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
-      var unityInstance = null;
-      
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+      }
 
       loadingBar.style.display = "block";
 
@@ -57,37 +118,13 @@
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
           progressBarFull.style.width = 100 * progress + "%";
-        }).then((instance) => {
-          unityInstance = instance;
+        }).then((unityInstance) => {
           loadingBar.style.display = "none";
-          if (fullscreenButton)
-          {
-            fullscreenButton.onclick = () => {
-              unityInstance.SetFullscreen(1);
-            };
-          }
         }).catch((message) => {
           alert(message);
         });
       };
       document.body.appendChild(script);
-
-      let enterARButton = document.getElementById('enterar');
-      let enterVRButton = document.getElementById('entervr');
-
-      document.addEventListener('onARSupportedCheck', function (event) {
-        enterARButton.disabled = !event.detail.supported;
-      }, false);
-      document.addEventListener('onVRSupportedCheck', function (event) {
-        enterVRButton.disabled = !event.detail.supported;
-      }, false);
-
-      enterARButton.addEventListener('click', function (event) {
-        unityInstance.Module.WebXR.toggleAR();
-      }, false);
-      enterVRButton.addEventListener('click', function (event) {
-        unityInstance.Module.WebXR.toggleVR();
-      }, false);
     </script>
   </body>
 </html>
